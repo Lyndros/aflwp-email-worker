@@ -1,0 +1,181 @@
+def computeBuildFileName(String version, String branchName) {
+    def isTag = version ==~ /^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$/
+    return isTag 
+        ? "aflwp-email-worker_${version}.zip" 
+        : "aflwp-email-worker_${branchName.replaceAll(/[^a-zA-Z0-9_\-]/, '_')}_${version}.zip"
+}
+
+pipeline {
+    agent any
+
+    options {
+        // Evita correr 2 builds del mismo job corran en paralelo en general
+        disableConcurrentBuilds()
+    }
+
+    tools {
+        nodejs 'node-24.11.0' // Uses the 'node-24.11.0' version configured in Global Tool Configuration
+    }
+
+    environment {
+        SCANNER_HOME = tool 'SonarQube01'
+    }
+
+    stages {
+
+        stage('Pre-clean Workspace') {
+            steps {
+                script {
+                    echo "🧹 Pre-clean zip & test folders"
+                    sh 'rm -f aflwp-email-worker_*.zip || true'
+                    sh 'rm -rf coverage/* || true'
+                }
+            }
+        }
+
+        stage('Build Version Detection') {
+            steps {
+                script {
+                    try {
+                        def tag = sh(script: "git describe --tags --exact-match HEAD", returnStdout: true).trim()
+                        echo "🏷️ Tag detected: ${tag}"
+                        env.BUILD_VERSION = tag
+                    } catch (Exception e) {
+                        echo "ℹ️ No tag detected. Using BUILD_NUMBER: ${BUILD_NUMBER}"
+                        env.BUILD_VERSION = "${BUILD_NUMBER}"
+                    }
+
+                    def branch = env.BRANCH_NAME ?: 'unknown'
+                    env.BUILD_FILE = computeBuildFileName(env.BUILD_VERSION, branch)
+                    env.PROJECT_PREFIX = "aflwp-email-worker_${branch.replaceAll(/[^a-zA-Z0-9_\-]/, '_')}"
+
+                    echo "📆 Final Build File: ${env.BUILD_FILE}"
+                    echo "🏗️ Project Prefix: ${env.PROJECT_PREFIX}"
+                }
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                script {
+                    echo "📦 Installing Node.js dependencies..."
+                    sh 'npm install'
+                }
+            }
+        }
+
+        stage('Unit Tests') {
+            steps {
+                script {
+                    echo "🧪 Running Unit Tests..."
+                    sh 'npm run tests:unit'
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                script {
+                    echo "🔨 Building TypeScript..."
+                    sh 'npm run build'
+                }
+            }
+        }
+
+        stage('SonarQube') {
+            steps {
+                withSonarQubeEnv(installationName: 'SonarQube01', credentialsId: 'jenkins-sonarqube') {
+                    script {
+                        echo "🔎 SonarQube Analysis: ${env.BUILD_VERSION}"
+                        def scanner = env.SCANNER_HOME
+                        sh "${scanner}/bin/sonar-scanner -Dsonar.projectVersion=${env.BUILD_VERSION} -Dproject.settings=sonar-project.properties"
+                    }
+                }
+            }
+        }
+
+        stage('Package') {
+            steps {
+                script {
+                    echo "📦 Creating deployment package..."
+                    
+                    def tmpDir = sh(script: 'mktemp -d', returnStdout: true).trim()
+                    def packageDir = "${tmpDir}/aflwp-email-worker"
+                    def buildVersion = env.BUILD_VERSION.replace('"', '\\"')
+
+                    sh """
+                        mkdir -p "${packageDir}"
+                        cp -a . "${packageDir}/"
+
+                        # Update version in package.json if needed
+                        sed -i "s/\"version\": \".*\"/\"version\": \"${buildVersion}\"/" "${packageDir}/package.json"
+
+                        cd "${tmpDir}"
+                        zip -r "${WORKSPACE}/${env.BUILD_FILE}" aflwp-email-worker \
+                            -x "**/node_modules/**" \
+                            "**/coverage/**" \
+                            "**/build/**" \
+                            "**/tests/**" \
+                            "**/scripts/jenkins/**" \
+                            "**/logs/**" \
+                            "**/docs/**" \
+                            "**/.git/**" \
+                            "**/.vscode/**" \
+                            "**/.idea/**" \
+                            "**/.qodo" \
+                            "**/*.test.ts" \
+                            "**/*.test.js" \
+                            "**/vitest.*" \
+                            "**/tsconfig.json" \
+                            "**/.env*" \
+                            "**/.dockerignore" \
+                            "**/.gitignore" \
+                            "**/.selected.environment" \
+                            "**/.cursorrules" \
+                            "**/Dockerfile*"
+                        rm -rf "${tmpDir}"
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            script {
+                echo "📁 Archiving Build: " + env.BUILD_FILE
+                archiveArtifacts artifacts: env.BUILD_FILE, allowEmptyArchive: false
+
+                // Publish HTML coverage report
+                publishHTML(target: [
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: false,
+                    keepAll: true,
+                    reportDir: 'coverage/lcov-report/',
+                    reportFiles: 'index.html',
+                    reportName: 'LCOV Coverage Report'
+                ])
+
+                // Clean up after successful archiving
+                echo "🧹 Clean up workspace artifacts"
+                sh """
+                    rm -f "${env.BUILD_FILE}" || true
+                    rm -rf coverage/* || true
+                """
+            }
+        }
+
+        always {
+            script {
+                // Only clean up if success block didn't run (build failed)
+                if (currentBuild.result != 'SUCCESS') {
+                    echo "🧹 Clean up workspace artifacts (build failed)"
+                    sh """
+                        rm -f aflwp-email-worker_*.zip || true
+                        rm -rf coverage/* || true
+                    """
+                }
+            }
+        }
+    }
+}
