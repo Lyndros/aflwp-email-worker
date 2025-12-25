@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome! Your License is Ready</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    .container {
+      background-color: #ffffff;
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #2c3e50;
+      margin-top: 0;
+    }
+    .info-section {
+      background-color: #f8f9fa;
+      border-left: 4px solid #007bff;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    .license-key {
+      font-family: 'Courier New', monospace;
+      font-size: 18px;
+      font-weight: bold;
+      color: #007bff;
+      background-color: #e7f3ff;
+      padding: 10px;
+      border-radius: 4px;
+      text-align: center;
+      margin: 15px 0;
+    }
+    .footer {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #ddd;
+      font-size: 12px;
+      color: #777;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Welcome! Your License is Ready</h1>
+    
+    <p>Dear {{customerName}},</p>
+    
+    <p>Thank you for your purchase! Your license has been activated and is ready to use.</p>
+    
+    <div class="info-section">
+      <h2 style="margin-top: 0; color: #007bff;">Your License Key</h2>
+      <div class="license-key">{{licenseKey}}</div>
+      <p><strong>License Type:</strong> {{licenseTypeName}}</p>
+      <p><strong>Description:</strong> {{licenseTypeDescription}}</p>
+      <p><strong>Maximum Domains:</strong> {{licenseTypeMaxDomains}}</p>
+    </div>
+    
+    <p>You can now use this license key to activate your plugin.</p>
+    
+    <div class="footer">
+      <p>Thank you for choosing AFLWP!</p>
+      <p>If you have any questions, please contact our support team.</p>
+    </div>
+  </div>
+</body>
+</html>
+

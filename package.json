@@ -1,0 +1,57 @@
+{
+  "name": "aflwp-email-worker",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "AFLWP Email Worker - Background processing service for email notifications",
+  "main": "build/server.js",
+  "scripts": {
+    "build": "tsc && tsc-alias -p tsconfig.json -f -fe .js",
+    "clean": "rm -rf build/ coverage/",
+    "start": "node build/server.js",
+    "dev": "tsx watch source/server.ts",
+    "tests": "vitest",
+    "tests:unit": "vitest run --project unit --coverage --no-color"
+  },
+  "keywords": [
+    "aflwp",
+    "email",
+    "worker",
+    "nodemailer",
+    "redis",
+    "bullmq",
+    "typescript"
+  ],
+  "author": "Prollamador <hello@aflwp.com>",
+  "license": "MIT",
+  "dependencies": {
+    "bullmq": "^5.61.0",
+    "handlebars": "^4.0.0",
+    "ioredis": "^5.8.1",
+    "nodemailer": "^6.9.0",
+    "pino": "^10.1.0",
+    "pino-pretty": "^13.1.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.17",
+    "@types/nodemailer": "^6.4.0",
+    "@vitest/coverage-v8": "^4.0.16",
+    "picomatch": "^4.0.3",
+    "tsc-alias": "^1.8.16",
+    "tsx": "^4.21.0",
+    "typescript": "^5.1.6",
+    "vitest": "^4.0.16"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lyndros/aflwp-email-worker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Lyndros/aflwp-email-worker/issues"
+  },
+  "homepage": "https://github.com/Lyndros/aflwp-email-worker#readme"
+}
+

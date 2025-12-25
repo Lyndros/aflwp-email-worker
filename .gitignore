@@ -1,0 +1,15 @@
+# Directories
+node_modules/
+build/
+coverage/
+logs/
+
+# IDE configuration files
+.idea/
+.vscode/
+.qodo
+
+# Environment files
+.env.production
+.selected.environment
+

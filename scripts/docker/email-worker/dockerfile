@@ -1,0 +1,94 @@
+# Build stage
+FROM node:lts-alpine3.23 AS builder
+
+# Set node environment variable to development for building the application
+ENV NODE_ENV=development
+
+# Set default UID and GID for the node user (match with host user to avoid permission issues)
+ARG NODE_UID=2000
+ARG NODE_GID=2000
+
+# Create non-root user and set user and group IDs
+RUN addgroup -g ${NODE_GID} -S nodejs && adduser -S nodejs -u ${NODE_UID} -G nodejs
+
+# Install system dependencies
+RUN apk add --no-cache \
+    ca-certificates \
+    openssl \
+    iputils \
+    curl \
+    && update-ca-certificates
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json ./
+
+# Install all dependencies (including devDependencies for build)
+RUN npm ci --no-audit --no-fund
+
+# Copy source code
+COPY . .
+
+# Build the application compile
+RUN npm run build
+
+# Development stage (uses builder stage)
+FROM builder AS development
+
+# Expose port (will be overridden by docker-compose)
+EXPOSE ${PORT}
+
+# Switch to non-root user before running the application and set ownership of the working directory to the nodejs user
+RUN chown -R nodejs:nodejs /app
+USER nodejs
+
+# No needs CMD or COPY. Docker Compose override will take care of the rest.
+
+# Production stage
+FROM node:lts-alpine3.23 AS production
+
+# Set node environment variable to production
+ENV NODE_ENV=production
+
+# Set default UID and GID for the node user (match with host user to avoid permission issues)
+ARG NODE_UID=2000
+ARG NODE_GID=2000
+
+# Create non-root user and set user and group IDs
+RUN addgroup -g ${NODE_GID} -S nodejs && adduser -S nodejs -u ${NODE_UID} -G nodejs
+
+# Install system dependencies
+RUN apk add --no-cache \
+    ca-certificates \
+    openssl \
+    iputils \
+    curl \
+    && update-ca-certificates
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json ./
+
+# Install only production dependencies
+RUN npm ci --only=production --no-audit --no-fund && npm cache clean --force
+
+# Copy built application from builder stage
+COPY --from=builder /app/build ./build
+
+# Create logs directory do not need to change ownership since i am using a non-root user
+RUN mkdir -p /app/logs
+
+# Expose port (will be overridden by docker-compose)
+EXPOSE ${PORT}
+
+# Switch to non-root user before running the application and set ownership of the working directory to the nodejs user
+RUN chown -R nodejs:nodejs /app
+USER nodejs
+
+# Start the application
+CMD ["npm", "run", "start"]
+

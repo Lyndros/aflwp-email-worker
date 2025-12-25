@@ -1,0 +1,37 @@
+services:
+  email-worker:
+    build:
+      context: ../../
+      dockerfile: ./scripts/docker/email-worker/dockerfile
+      target: ${BUILD_TARGET:-development}
+    # container_name: email-worker removed for scaling purposes
+    restart: unless-stopped
+    # Note: Redis is managed by aflwp-api docker-compose
+    # Ensure both services are on the same network (internal/backend)
+    # Redis will be accessible via hostname 'redis' from the same network
+    env_file:
+      - ${APP_ENV_FILE}                        # The environment file is set in the Makefile (All variables are passed to the container)
+    volumes:
+      - ../../logs:/app/logs                   # Logs are mounted to allow logs to be written to the host
+    networks:
+      - internal
+      - backend
+    healthcheck:
+      test: ["CMD", "node", "-e", "console.log('Email Worker health check')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # Use host.docker.internal for Mac to access host services
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  internal:
+    driver: bridge
+    internal: true
+  backend:
+    driver: bridge
+  frontend:
+    driver: bridge
+

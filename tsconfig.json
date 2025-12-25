@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "module": "ES2022",
+    "esModuleInterop": true,
+    "outDir": "build",
+    "rootDir": "source",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "moduleResolution": "Node",
+    "sourceMap": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["source/*"],
+      "@tests/*": ["tests/*"],
+      "@mocks/*": ["tests/mocks/*"]
+    },
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "types": ["vitest/globals", "node"]
+  },
+  "include": ["source/**/*"],
+  "exclude": ["build", "tests", "coverage", "scripts", "**/*.test.ts"]
+}
+
