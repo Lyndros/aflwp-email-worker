@@ -20,7 +20,16 @@ export default defineConfig({
         'source/**/node_modules/**',
         'build/**',
         'coverage/**',
+        'source/server.ts', // Entrypoint, not unit testable
+        'source/types/**', // Type definitions only
+        'source/utils/logger.ts', // Logger is tested via usage, complex to unit test
       ],
+      thresholds: {
+        lines: 80,
+        functions: 40,
+        branches: 80,
+        statements: 80,
+      },
     },
   },
   resolve: {
