@@ -64,7 +64,6 @@ export class EmailService {
         'Email transporter initialized'
       );
     }
-ß
     return this.transporter;
   }
 
