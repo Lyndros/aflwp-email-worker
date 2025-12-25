@@ -77,6 +77,15 @@ export class EmailWorker {
     const { emailType, userId, customerEmail } = job.data;
     const jobId = job.id;
 
+    // Type guard functions for discriminated union
+    const isLicensePurchase = (data: EmailNotificationJobData): data is LicensePurchaseNotificationData => {
+      return data.emailType === 'license_purchase';
+    };
+
+    const isCreditPurchase = (data: EmailNotificationJobData): data is CreditPurchaseNotificationData => {
+      return data.emailType === 'credit_purchase';
+    };
+
     // Log job processing start
     logger.info({
       jobId,
@@ -85,31 +94,27 @@ export class EmailWorker {
       customerEmail,
       to: emailConfig.adminEmail,
       // For license purchases
-      ...(emailType === 'license_purchase' && {
-        licenseId: (job.data as LicensePurchaseNotificationData).licenseId,
-        customerName: (job.data as LicensePurchaseNotificationData).customerName,
-        stripeLicenseRecordId: (job.data as LicensePurchaseNotificationData).stripeLicenseRecordId,
+      ...(isLicensePurchase(job.data) && {
+        licenseId: job.data.licenseId,
+        customerName: job.data.customerName,
+        stripeLicenseRecordId: job.data.stripeLicenseRecordId,
       }),
       // For credit purchases
-      ...(emailType === 'credit_purchase' && {
-        licenseId: (job.data as CreditPurchaseNotificationData).licenseId,
-        creditAmount: (job.data as CreditPurchaseNotificationData).creditAmount,
-        transactionId: (job.data as CreditPurchaseNotificationData).transactionId,
-        stripeCreditRecordId: (job.data as CreditPurchaseNotificationData).stripeCreditRecordId,
+      ...(isCreditPurchase(job.data) && {
+        licenseId: job.data.licenseId,
+        creditAmount: job.data.creditAmount,
+        transactionId: job.data.transactionId,
+        stripeCreditRecordId: job.data.stripeCreditRecordId,
       }),
       status: 'pending',
     }, 'Processing email notification job');
 
     try {
       // Process job based on email type
-      if (emailType === 'license_purchase') {
-        await EmailService.sendLicensePurchaseNotification(
-          job.data as LicensePurchaseNotificationData
-        );
-      } else if (emailType === 'credit_purchase') {
-        await EmailService.sendCreditPurchaseNotification(
-          job.data as CreditPurchaseNotificationData
-        );
+      if (isLicensePurchase(job.data)) {
+        await EmailService.sendLicensePurchaseNotification(job.data);
+      } else if (isCreditPurchase(job.data)) {
+        await EmailService.sendCreditPurchaseNotification(job.data);
       } else {
         throw new EmailWorkerError(
           "VALIDATION_ERROR",
@@ -124,11 +129,11 @@ export class EmailWorker {
         userId,
         customerEmail,
         // ID del registro de Stripe para rastreabilidad
-        ...(emailType === 'license_purchase' && {
-          stripeLicenseRecordId: (job.data as LicensePurchaseNotificationData).stripeLicenseRecordId,
+        ...(isLicensePurchase(job.data) && {
+          stripeLicenseRecordId: job.data.stripeLicenseRecordId,
         }),
-        ...(emailType === 'credit_purchase' && {
-          stripeCreditRecordId: (job.data as CreditPurchaseNotificationData).stripeCreditRecordId,
+        ...(isCreditPurchase(job.data) && {
+          stripeCreditRecordId: job.data.stripeCreditRecordId,
         }),
         status: 'success',
         sentAt: new Date().toISOString(),
@@ -143,11 +148,11 @@ export class EmailWorker {
         userId,
         customerEmail,
         // ID del registro de Stripe para rastreabilidad
-        ...(emailType === 'license_purchase' && {
-          stripeLicenseRecordId: (job.data as LicensePurchaseNotificationData).stripeLicenseRecordId,
+        ...(isLicensePurchase(job.data) && {
+          stripeLicenseRecordId: job.data.stripeLicenseRecordId,
         }),
-        ...(emailType === 'credit_purchase' && {
-          stripeCreditRecordId: (job.data as CreditPurchaseNotificationData).stripeCreditRecordId,
+        ...(isCreditPurchase(job.data) && {
+          stripeCreditRecordId: job.data.stripeCreditRecordId,
         }),
         status: 'failed',
         error: errorMessage,
