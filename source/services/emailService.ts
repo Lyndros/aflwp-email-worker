@@ -53,6 +53,10 @@ export class EmailService {
           user: emailConfig.user,
           pass: emailConfig.password,
         },
+        // Configure timeouts to avoid "Greeting never received" errors
+        connectionTimeout: 60000, // 60 secondsß
+        greetingTimeout: 30000, // 30 seconds
+        socketTimeout: 60000, // 60 secondsß
       });
 
       logger.info(
@@ -60,7 +64,7 @@ export class EmailService {
         'Email transporter initialized'
       );
     }
-
+ß
     return this.transporter;
   }
 
