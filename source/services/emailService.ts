@@ -8,6 +8,7 @@
  * - SMTP email sending via Nodemailer
  * - Template-based email content
  * - Support for different email types (license purchase, credit purchase)
+ * - Sends notifications to both admin and customer
  * - Error handling and logging
  * 
  * @see {@link ./emailTemplateService.ts} Email template service
@@ -68,12 +69,12 @@ export class EmailService {
   }
 
   /**
-   * Send license purchase notification email to admin
+   * Send license purchase notification email to admin and customer
    * 
-   * Sends an email notification to the admin when a license purchase is completed.
+   * Sends email notifications to both the admin and the customer when a license purchase is completed.
    * 
    * @param data - License purchase notification data
-   * @returns Promise that resolves when email is sent
+   * @returns Promise that resolves when emails are sent
    * 
    * @throws {EMAIL_ERROR} When email sending fails
    * @throws {TEMPLATE_ERROR} When template rendering fails
@@ -98,8 +99,10 @@ export class EmailService {
     data: LicensePurchaseNotificationData
   ): Promise<void> {
     try {
-      // Render template
-      const html = await EmailTemplateService.renderTemplate(
+      const transporter = this.getTransporter();
+
+      // Send email to admin
+      const adminHtml = await EmailTemplateService.renderTemplate(
         'admin-license-purchase-notification.html',
         {
           customerName: data.customerName,
@@ -111,13 +114,11 @@ export class EmailService {
         }
       );
 
-      // Send email
-      const transporter = this.getTransporter();
       await transporter.sendMail({
         from: emailConfig.from,
         to: emailConfig.adminEmail,
         subject: `New License Purchase: ${data.licenseTypeName}`,
-        html,
+        html: adminHtml,
       });
 
       logger.info(
@@ -128,6 +129,35 @@ export class EmailService {
           licenseTypeName: data.licenseTypeName,
         },
         'License purchase notification email sent to admin'
+      );
+
+      // Send email to customer
+      const customerHtml = await EmailTemplateService.renderTemplate(
+        'customer-license-purchase-notification.html',
+        {
+          customerName: data.customerName,
+          licenseKey: data.licenseKey,
+          licenseTypeName: data.licenseTypeName,
+          licenseTypeDescription: data.licenseTypeDescription,
+          licenseTypeMaxDomains: data.licenseTypeMaxDomains,
+        }
+      );
+
+      await transporter.sendMail({
+        from: emailConfig.from,
+        to: data.customerEmail,
+        subject: `Your License is Ready: ${data.licenseTypeName}`,
+        html: customerHtml,
+      });
+
+      logger.info(
+        {
+          userId: data.userId,
+          licenseId: data.licenseId,
+          customerEmail: data.customerEmail,
+          licenseTypeName: data.licenseTypeName,
+        },
+        'License purchase notification email sent to customer'
       );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -140,12 +170,12 @@ export class EmailService {
   }
 
   /**
-   * Send credit purchase notification email to admin
+   * Send credit purchase notification email to admin and customer
    * 
-   * Sends an email notification to the admin when a credit purchase is completed.
+   * Sends email notifications to both the admin and the customer when a credit purchase is completed.
    * 
    * @param data - Credit purchase notification data
-   * @returns Promise that resolves when email is sent
+   * @returns Promise that resolves when emails are sent
    * 
    * @throws {EMAIL_ERROR} When email sending fails
    * @throws {TEMPLATE_ERROR} When template rendering fails
@@ -169,8 +199,10 @@ export class EmailService {
     data: CreditPurchaseNotificationData
   ): Promise<void> {
     try {
-      // Render template
-      const html = await EmailTemplateService.renderTemplate(
+      const transporter = this.getTransporter();
+
+      // Send email to admin
+      const adminHtml = await EmailTemplateService.renderTemplate(
         'admin-credit-purchase-notification.html',
         {
           customerEmail: data.customerEmail,
@@ -181,13 +213,11 @@ export class EmailService {
         }
       );
 
-      // Send email
-      const transporter = this.getTransporter();
       await transporter.sendMail({
         from: emailConfig.from,
         to: emailConfig.adminEmail,
         subject: `New Credit Purchase: ${data.purchaseTypeName}`,
-        html,
+        html: adminHtml,
       });
 
       logger.info(
@@ -199,6 +229,35 @@ export class EmailService {
           purchaseTypeName: data.purchaseTypeName,
         },
         'Credit purchase notification email sent to admin'
+      );
+
+      // Send email to customer
+      const customerHtml = await EmailTemplateService.renderTemplate(
+        'customer-credit-purchase-notification.html',
+        {
+          creditAmount: data.creditAmount,
+          purchaseTypeName: data.purchaseTypeName,
+          purchaseTypeDescription: data.purchaseTypeDescription,
+          transactionId: data.transactionId,
+        }
+      );
+
+      await transporter.sendMail({
+        from: emailConfig.from,
+        to: data.customerEmail,
+        subject: `Thank You for Your Credit Purchase: ${data.purchaseTypeName}`,
+        html: customerHtml,
+      });
+
+      logger.info(
+        {
+          userId: data.userId,
+          licenseId: data.licenseId,
+          customerEmail: data.customerEmail,
+          creditAmount: data.creditAmount,
+          purchaseTypeName: data.purchaseTypeName,
+        },
+        'Credit purchase notification email sent to customer'
       );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
