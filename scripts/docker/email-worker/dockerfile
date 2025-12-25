@@ -78,6 +78,7 @@ RUN npm ci --only=production --no-audit --no-fund && npm cache clean --force
 
 # Copy built application from builder stage
 COPY --from=builder /app/build ./build
+COPY --from=builder /app/source/templates ./build/templates
 
 # Create logs directory do not need to change ownership since i am using a non-root user
 RUN mkdir -p /app/logs
