@@ -23,6 +23,7 @@ export default defineConfig({
         'source/server.ts', // Entrypoint, not unit testable
         'source/types/**', // Type definitions only
         'source/utils/logger.ts', // Logger is tested via usage, complex to unit test
+        'source/templates/**', // HTML templates, not TypeScript code
       ],
       thresholds: {
         lines: 80,

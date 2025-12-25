@@ -19,6 +19,8 @@ const mockSendCreditPurchaseNotification = () => (globalThis as any).__mockSendC
 // Import after mocks
 import { EmailWorker } from '@/emailWorker';
 import { EmailWorkerError } from '@/api/v1/errors';
+import { Worker } from 'bullmq';
+import { Redis } from 'ioredis';
 
 // Mock EmailService
 vi.mock('@/services/emailService', () => {
@@ -46,25 +48,55 @@ vi.mock('@/utils/logger', () => ({
 }));
 
 // Mock BullMQ Worker and Redis
-vi.mock('bullmq', () => ({
-  Worker: vi.fn().mockImplementation(() => ({
-    on: vi.fn(),
-    close: vi.fn(),
-  })),
-}));
+const mockWorkerOn = vi.fn();
+const mockWorkerClose = vi.fn();
 
-vi.mock('ioredis', () => ({
-  Redis: vi.fn().mockImplementation(() => ({
-    connect: vi.fn(),
-    disconnect: vi.fn(),
-  })),
-}));
+vi.mock('bullmq', () => {
+  class MockWorker {
+    on = mockWorkerOn;
+    close = mockWorkerClose;
+    
+    constructor() {
+      // Constructor implementation
+    }
+  }
+  
+  (globalThis as any).__mockWorker = MockWorker;
+  
+  return {
+    Worker: MockWorker,
+  };
+});
+
+const mockRedisQuit = vi.fn();
+
+vi.mock('ioredis', () => {
+  class MockRedis {
+    connect = vi.fn();
+    disconnect = vi.fn();
+    quit = mockRedisQuit;
+    
+    constructor() {
+      // Constructor implementation
+    }
+  }
+  
+  (globalThis as any).__mockRedis = MockRedis;
+  
+  return {
+    Redis: MockRedis,
+    default: MockRedis,
+  };
+});
 
 describe('EmailWorker', () => {
   let emailWorker: EmailWorker;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockWorkerOn.mockClear();
+    mockWorkerClose.mockClear();
+    mockRedisQuit.mockClear();
     emailWorker = new EmailWorker();
   });
 
@@ -230,11 +262,28 @@ describe('EmailWorker', () => {
     });
   });
 
+  describe('start', () => {
+    it('should initialize Redis and Worker', async () => {
+      await emailWorker.start();
+
+      // Verify that worker and redis instances are created
+      expect((emailWorker as any).redis).toBeDefined();
+      expect((emailWorker as any).worker).toBeDefined();
+    });
+
+    it('should setup event handlers after creating worker', async () => {
+      await emailWorker.start();
+
+      // Verify event handlers are set up
+      expect(mockWorkerOn).toHaveBeenCalled();
+    });
+  });
+
   describe('setupEventHandlers', () => {
     it('should setup event handlers when worker is initialized', () => {
       const mockOn = vi.fn();
-      const mockWorker = { on: mockOn };
-      (emailWorker as any).worker = mockWorker;
+      const mockWorkerInstance = { on: mockOn };
+      (emailWorker as any).worker = mockWorkerInstance;
 
       (emailWorker as any).setupEventHandlers();
 
@@ -248,20 +297,37 @@ describe('EmailWorker', () => {
         (emailWorker as any).setupEventHandlers();
       }).not.toThrow();
     });
+
+    it('should register all worker event handlers', () => {
+      const mockOn = vi.fn();
+      const mockWorkerInstance = { on: mockOn };
+      (emailWorker as any).worker = mockWorkerInstance;
+
+      (emailWorker as any).setupEventHandlers();
+
+      // Should register: ready, active, completed, failed, stalled, error
+      expect(mockOn).toHaveBeenCalledTimes(6);
+      expect(mockOn).toHaveBeenCalledWith('ready', expect.any(Function));
+      expect(mockOn).toHaveBeenCalledWith('active', expect.any(Function));
+      expect(mockOn).toHaveBeenCalledWith('completed', expect.any(Function));
+      expect(mockOn).toHaveBeenCalledWith('failed', expect.any(Function));
+      expect(mockOn).toHaveBeenCalledWith('stalled', expect.any(Function));
+      expect(mockOn).toHaveBeenCalledWith('error', expect.any(Function));
+    });
   });
 
   describe('shutdown', () => {
     it('should shutdown worker and redis gracefully', async () => {
-      const mockWorkerClose = vi.fn().mockResolvedValue(undefined);
-      const mockRedisQuit = vi.fn().mockResolvedValue('OK');
+      const mockWorkerCloseFn = vi.fn().mockResolvedValue(undefined);
+      const mockRedisQuitFn = vi.fn().mockResolvedValue('OK');
 
-      (emailWorker as any).worker = { close: mockWorkerClose };
-      (emailWorker as any).redis = { quit: mockRedisQuit };
+      (emailWorker as any).worker = { close: mockWorkerCloseFn };
+      (emailWorker as any).redis = { quit: mockRedisQuitFn };
 
       await emailWorker.shutdown();
 
-      expect(mockWorkerClose).toHaveBeenCalledTimes(1);
-      expect(mockRedisQuit).toHaveBeenCalledTimes(1);
+      expect(mockWorkerCloseFn).toHaveBeenCalledTimes(1);
+      expect(mockRedisQuitFn).toHaveBeenCalledTimes(1);
     });
 
     it('should handle shutdown when worker is not initialized', async () => {
@@ -272,36 +338,44 @@ describe('EmailWorker', () => {
     });
 
     it('should handle shutdown when only worker is initialized', async () => {
-      const mockWorkerClose = vi.fn().mockResolvedValue(undefined);
-      (emailWorker as any).worker = { close: mockWorkerClose };
+      const mockWorkerCloseFn = vi.fn().mockResolvedValue(undefined);
+      (emailWorker as any).worker = { close: mockWorkerCloseFn };
       (emailWorker as any).redis = undefined;
 
       await emailWorker.shutdown();
 
-      expect(mockWorkerClose).toHaveBeenCalledTimes(1);
+      expect(mockWorkerCloseFn).toHaveBeenCalledTimes(1);
     });
 
     it('should handle shutdown when only redis is initialized', async () => {
-      const mockRedisQuit = vi.fn().mockResolvedValue('OK');
+      const mockRedisQuitFn = vi.fn().mockResolvedValue('OK');
       (emailWorker as any).worker = undefined;
-      (emailWorker as any).redis = { quit: mockRedisQuit };
+      (emailWorker as any).redis = { quit: mockRedisQuitFn };
 
       await emailWorker.shutdown();
 
-      expect(mockRedisQuit).toHaveBeenCalledTimes(1);
+      expect(mockRedisQuitFn).toHaveBeenCalledTimes(1);
     });
 
-    it('should handle shutdown errors', async () => {
-      const mockWorkerClose = vi.fn().mockRejectedValue(new Error('Close failed'));
-      (emailWorker as any).worker = { close: mockWorkerClose };
+    it('should handle shutdown errors from worker', async () => {
+      const mockWorkerCloseFn = vi.fn().mockRejectedValue(new Error('Close failed'));
+      (emailWorker as any).worker = { close: mockWorkerCloseFn };
       (emailWorker as any).redis = undefined;
 
       await expect(emailWorker.shutdown()).rejects.toThrow();
     });
 
+    it('should handle shutdown errors from redis', async () => {
+      const mockRedisQuitFn = vi.fn().mockRejectedValue(new Error('Quit failed'));
+      (emailWorker as any).worker = undefined;
+      (emailWorker as any).redis = { quit: mockRedisQuitFn };
+
+      await expect(emailWorker.shutdown()).rejects.toThrow();
+    });
+
     it('should handle non-Error exceptions during shutdown', async () => {
-      const mockWorkerClose = vi.fn().mockRejectedValue('String error');
-      (emailWorker as any).worker = { close: mockWorkerClose };
+      const mockWorkerCloseFn = vi.fn().mockRejectedValue('String error');
+      (emailWorker as any).worker = { close: mockWorkerCloseFn };
       (emailWorker as any).redis = undefined;
 
       await expect(emailWorker.shutdown()).rejects.toThrow();
