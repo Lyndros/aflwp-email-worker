@@ -93,3 +93,7 @@ USER nodejs
 # Start the application
 CMD ["npm", "run", "start"]
 
+
+
+
+

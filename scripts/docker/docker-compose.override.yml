@@ -5,3 +5,7 @@ services:
       - /app/node_modules # Does the trick to not overwrite node_modules from the container
     command: ["npm", "run", "dev"]
 
+
+
+
+
