@@ -9,7 +9,7 @@ DOCKER_COMPOSE = docker compose
 # Debug mode: set DEBUG=1 to print commands instead of executing them
 DEBUG ?= 0
 
-PROJECT_PREFIX 			= aflwp-control
+PROJECT_PREFIX = aflwp-control
 PROJECT_NAME_DEV    = $(PROJECT_PREFIX)-dev
 PROJECT_NAME_PROD   = $(PROJECT_PREFIX)-prod
 
@@ -231,7 +231,7 @@ clean:
 	echo ""; \
 	$(call confirm_dangerous_operation,"🚨 WARNING: This command will PERMANENTLY delete all volumes and data.","Cleanup cancelled."); \
 	echo "🧹 Proceeding with complete cleanup..."; \
-	$(call exec_command,APP_ENV_FILE=$$APP_ENV_FILE BUILD_TARGET=$$BUILD_TARGET $(DOCKER_COMPOSE) $$COMPOSE_FILES -p $$PROJECT_NAME --env-file=$$ENV_FILE down -v); \
+	$(call exec_command,APP_ENV_FILE=$$APP_ENV_FILE BUILD_TARGET=$$BUILD_TARGET $(DOCKER_COMPOSE) $$COMPOSE_FILES -p $$PROJECT_NAME --env-file=$$ENV_FILE down -v --remove-orphans); \
 	if [ "$(DEBUG)" != "1" ]; then \
 		rm -f $(STATE_FILE); \
 	fi
