@@ -1,10 +1,10 @@
 services:
   email-worker:
+    container_name: email-worker # Fixed container name no need to scale
     build:
       context: ../../
       dockerfile: ./scripts/docker/email-worker/dockerfile
       target: ${BUILD_TARGET:-development}
-    # container_name: email-worker removed for scaling purposes
     restart: unless-stopped
     # Note: Redis is managed by aflwp-api docker-compose
     # Ensure both services are on the same network (internal/backend)
