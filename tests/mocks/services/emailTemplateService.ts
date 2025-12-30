@@ -1,6 +1,6 @@
 /**
  * EmailTemplateService Mock
- * 
+ *
  * Mock for EmailTemplateService used in tests.
  */
 
@@ -17,4 +17,3 @@ vi.mock('@/services/emailTemplateService', () => ({
     clearCache: mockClearCache,
   },
 }));
-

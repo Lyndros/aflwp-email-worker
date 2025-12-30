@@ -1,16 +1,16 @@
 /**
  * Email Service
- * 
+ *
  * This module provides functionality for sending emails using Nodemailer.
  * It handles email sending operations including template rendering and SMTP configuration.
- * 
+ *
  * Features:
  * - SMTP email sending via Nodemailer
  * - Template-based email content
  * - Support for different email types (license purchase, credit purchase)
  * - Sends notifications to both admin and customer
  * - Error handling and logging
- * 
+ *
  * @see {@link ./emailTemplateService.ts} Email template service
  * @see {@link ../config.ts} SMTP configuration
  */
@@ -27,7 +27,7 @@ import {
 
 /**
  * Email Service for sending emails
- * 
+ *
  * Handles all email sending operations including SMTP configuration,
  * template rendering, and email delivery.
  */
@@ -36,12 +36,12 @@ export class EmailService {
 
   /**
    * Get or create Nodemailer transporter
-   * 
+   *
    * Creates a singleton Nodemailer transporter instance with SMTP configuration.
    * The transporter is reused across all email sends for efficiency.
-   * 
+   *
    * @returns Configured Nodemailer transporter
-   * 
+   *
    * @private
    */
   private static getTransporter(): Transporter {
@@ -70,15 +70,15 @@ export class EmailService {
 
   /**
    * Send license purchase notification email to admin and customer
-   * 
+   *
    * Sends email notifications to both the admin and the customer when a license purchase is completed.
-   * 
+   *
    * @param data - License purchase notification data
    * @returns Promise that resolves when emails are sent
-   * 
+   *
    * @throws {EMAIL_ERROR} When email sending fails
    * @throws {TEMPLATE_ERROR} When template rendering fails
-   * 
+   *
    * @example
    * ```typescript
    * await EmailService.sendLicensePurchaseNotification({
@@ -160,26 +160,30 @@ export class EmailService {
         'License purchase notification email sent to customer'
       );
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       logger.error(
         { userId: data.userId, licenseId: data.licenseId, error: errorMessage },
         'Failed to send license purchase notification email'
       );
-      throw new EmailWorkerError("EMAIL_ERROR", `Failed to send email: ${errorMessage}`);
+      throw new EmailWorkerError(
+        'EMAIL_ERROR',
+        `Failed to send email: ${errorMessage}`
+      );
     }
   }
 
   /**
    * Send credit purchase notification email to admin and customer
-   * 
+   *
    * Sends email notifications to both the admin and the customer when a credit purchase is completed.
-   * 
+   *
    * @param data - Credit purchase notification data
    * @returns Promise that resolves when emails are sent
-   * 
+   *
    * @throws {EMAIL_ERROR} When email sending fails
    * @throws {TEMPLATE_ERROR} When template rendering fails
-   * 
+   *
    * @example
    * ```typescript
    * await EmailService.sendCreditPurchaseNotification({
@@ -260,13 +264,16 @@ export class EmailService {
         'Credit purchase notification email sent to customer'
       );
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       logger.error(
         { userId: data.userId, licenseId: data.licenseId, error: errorMessage },
         'Failed to send credit purchase notification email'
       );
-      throw new EmailWorkerError("EMAIL_ERROR", `Failed to send email: ${errorMessage}`);
+      throw new EmailWorkerError(
+        'EMAIL_ERROR',
+        `Failed to send email: ${errorMessage}`
+      );
     }
   }
 }
-

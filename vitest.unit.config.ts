@@ -7,7 +7,12 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: ['tests/unit/**/*.test.ts'],
-    exclude: ['**/node_modules/**', '**/build/**', '**/dist/**', '**/coverage/**'],
+    exclude: [
+      '**/node_modules/**',
+      '**/build/**',
+      '**/dist/**',
+      '**/coverage/**',
+    ],
     setupFiles: ['./vitest.setup.ts', './tests/setup/mocks.ts'],
     coverage: {
       provider: 'v8',
@@ -41,9 +46,3 @@ export default defineConfig({
     },
   },
 });
-
-
-
-
-
-

@@ -1,6 +1,6 @@
 /**
  * EmailWorker Unit Tests
- * 
+ *
  * Tests for the EmailWorker class.
  * Tests cover job processing logic and error handling.
  */
@@ -13,8 +13,10 @@ import type {
 import type { Job } from 'bullmq';
 
 // Get mock functions from global scope
-const mockSendLicensePurchaseNotification = () => (globalThis as any).__mockSendLicensePurchaseNotification;
-const mockSendCreditPurchaseNotification = () => (globalThis as any).__mockSendCreditPurchaseNotification;
+const mockSendLicensePurchaseNotification = () =>
+  (globalThis as any).__mockSendLicensePurchaseNotification;
+const mockSendCreditPurchaseNotification = () =>
+  (globalThis as any).__mockSendCreditPurchaseNotification;
 
 // Import after mocks
 import { EmailWorker } from '@/emailWorker';
@@ -26,10 +28,12 @@ import { Redis } from 'ioredis';
 vi.mock('@/services/emailService', () => {
   const mockSendLicensePurchaseNotificationFn = vi.fn();
   const mockSendCreditPurchaseNotificationFn = vi.fn();
-  
-  (globalThis as any).__mockSendLicensePurchaseNotification = mockSendLicensePurchaseNotificationFn;
-  (globalThis as any).__mockSendCreditPurchaseNotification = mockSendCreditPurchaseNotificationFn;
-  
+
+  (globalThis as any).__mockSendLicensePurchaseNotification =
+    mockSendLicensePurchaseNotificationFn;
+  (globalThis as any).__mockSendCreditPurchaseNotification =
+    mockSendCreditPurchaseNotificationFn;
+
   return {
     EmailService: {
       sendLicensePurchaseNotification: mockSendLicensePurchaseNotificationFn,
@@ -55,14 +59,14 @@ vi.mock('bullmq', () => {
   class MockWorker {
     on = mockWorkerOn;
     close = mockWorkerClose;
-    
+
     constructor() {
       // Constructor implementation
     }
   }
-  
+
   (globalThis as any).__mockWorker = MockWorker;
-  
+
   return {
     Worker: MockWorker,
   };
@@ -75,14 +79,14 @@ vi.mock('ioredis', () => {
     connect = vi.fn();
     disconnect = vi.fn();
     quit = mockRedisQuit;
-    
+
     constructor() {
       // Constructor implementation
     }
   }
-  
+
   (globalThis as any).__mockRedis = MockRedis;
-  
+
   return {
     Redis: MockRedis,
     default: MockRedis,
@@ -126,7 +130,9 @@ describe('EmailWorker', () => {
       // Access private method for testing
       await (emailWorker as any).processJob(mockJob);
 
-      expect(mockSendLicensePurchaseNotification()).toHaveBeenCalledWith(licenseData);
+      expect(mockSendLicensePurchaseNotification()).toHaveBeenCalledWith(
+        licenseData
+      );
       expect(mockSendLicensePurchaseNotification()).toHaveBeenCalledTimes(1);
     });
 
@@ -153,7 +159,9 @@ describe('EmailWorker', () => {
 
       await (emailWorker as any).processJob(mockJob);
 
-      expect(mockSendCreditPurchaseNotification()).toHaveBeenCalledWith(creditData);
+      expect(mockSendCreditPurchaseNotification()).toHaveBeenCalledWith(
+        creditData
+      );
       expect(mockSendCreditPurchaseNotification()).toHaveBeenCalledTimes(1);
     });
 
@@ -170,13 +178,13 @@ describe('EmailWorker', () => {
         attemptsMade: 0,
       } as unknown as Job<any>;
 
-      await expect(
-        (emailWorker as any).processJob(mockJob)
-      ).rejects.toThrow(EmailWorkerError);
+      await expect((emailWorker as any).processJob(mockJob)).rejects.toThrow(
+        EmailWorkerError
+      );
 
-      await expect(
-        (emailWorker as any).processJob(mockJob)
-      ).rejects.toThrow('Unknown email type: unknown_type');
+      await expect((emailWorker as any).processJob(mockJob)).rejects.toThrow(
+        'Unknown email type: unknown_type'
+      );
     });
 
     it('should handle errors from EmailService for license purchase', async () => {
@@ -199,12 +207,15 @@ describe('EmailWorker', () => {
         attemptsMade: 0,
       } as unknown as Job<LicensePurchaseNotificationData>;
 
-      const emailError = new EmailWorkerError('EMAIL_ERROR', 'Failed to send email');
+      const emailError = new EmailWorkerError(
+        'EMAIL_ERROR',
+        'Failed to send email'
+      );
       mockSendLicensePurchaseNotification().mockRejectedValue(emailError);
 
-      await expect(
-        (emailWorker as any).processJob(mockJob)
-      ).rejects.toThrow(EmailWorkerError);
+      await expect((emailWorker as any).processJob(mockJob)).rejects.toThrow(
+        EmailWorkerError
+      );
     });
 
     it('should handle errors from EmailService for credit purchase', async () => {
@@ -226,12 +237,15 @@ describe('EmailWorker', () => {
         attemptsMade: 0,
       } as unknown as Job<CreditPurchaseNotificationData>;
 
-      const emailError = new EmailWorkerError('EMAIL_ERROR', 'Failed to send email');
+      const emailError = new EmailWorkerError(
+        'EMAIL_ERROR',
+        'Failed to send email'
+      );
       mockSendCreditPurchaseNotification().mockRejectedValue(emailError);
 
-      await expect(
-        (emailWorker as any).processJob(mockJob)
-      ).rejects.toThrow(EmailWorkerError);
+      await expect((emailWorker as any).processJob(mockJob)).rejects.toThrow(
+        EmailWorkerError
+      );
     });
 
     it('should handle non-Error exceptions', async () => {
@@ -256,9 +270,7 @@ describe('EmailWorker', () => {
 
       mockSendLicensePurchaseNotification().mockRejectedValue('String error');
 
-      await expect(
-        (emailWorker as any).processJob(mockJob)
-      ).rejects.toThrow();
+      await expect((emailWorker as any).processJob(mockJob)).rejects.toThrow();
     });
   });
 
@@ -358,7 +370,9 @@ describe('EmailWorker', () => {
     });
 
     it('should handle shutdown errors from worker', async () => {
-      const mockWorkerCloseFn = vi.fn().mockRejectedValue(new Error('Close failed'));
+      const mockWorkerCloseFn = vi
+        .fn()
+        .mockRejectedValue(new Error('Close failed'));
       (emailWorker as any).worker = { close: mockWorkerCloseFn };
       (emailWorker as any).redis = undefined;
 
@@ -366,7 +380,9 @@ describe('EmailWorker', () => {
     });
 
     it('should handle shutdown errors from redis', async () => {
-      const mockRedisQuitFn = vi.fn().mockRejectedValue(new Error('Quit failed'));
+      const mockRedisQuitFn = vi
+        .fn()
+        .mockRejectedValue(new Error('Quit failed'));
       (emailWorker as any).worker = undefined;
       (emailWorker as any).redis = { quit: mockRedisQuitFn };
 
@@ -382,4 +398,3 @@ describe('EmailWorker', () => {
     });
   });
 });
-

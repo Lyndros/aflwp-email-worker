@@ -1,6 +1,6 @@
 /**
  * ioredis Mock
- * 
+ *
  * Global mock for ioredis to prevent actual Redis connections during tests.
  */
 
@@ -16,4 +16,3 @@ vi.mock('ioredis', () => ({
     quit: vi.fn().mockResolvedValue('OK'),
   })),
 }));
-

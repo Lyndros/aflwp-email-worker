@@ -25,9 +25,3 @@
   "include": ["source/**/*"],
   "exclude": ["build", "tests", "coverage", "scripts", "**/*.test.ts"]
 }
-
-
-
-
-
-

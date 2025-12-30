@@ -1,6 +1,6 @@
 /**
  * EmailTemplateService Unit Tests
- * 
+ *
  * Comprehensive unit tests for the EmailTemplateService class.
  * Tests cover template loading, rendering, caching, and error handling.
  */
@@ -51,9 +51,13 @@ const mockReadFileSync = () => (globalThis as any).__mockReadFileSync;
 const mockCompile = () => (globalThis as any).__mockCompile;
 
 describe('EmailTemplateService', () => {
-  const mockTemplateContent = '<html><body>Hello {{customerName}}!</body></html>';
+  const mockTemplateContent =
+    '<html><body>Hello {{customerName}}!</body></html>';
   const mockCompiledTemplate = vi.fn((data: any) => {
-    return mockTemplateContent.replace('{{customerName}}', data.customerName || '');
+    return mockTemplateContent.replace(
+      '{{customerName}}',
+      data.customerName || ''
+    );
   });
 
   beforeEach(() => {
@@ -70,7 +74,8 @@ describe('EmailTemplateService', () => {
 
   describe('loadTemplate', () => {
     it('should load and compile a template from filesystem', async () => {
-      const template = await EmailTemplateService.loadTemplate('test-template.html');
+      const template =
+        await EmailTemplateService.loadTemplate('test-template.html');
 
       expect(mockReadFileSync()).toHaveBeenCalled();
       expect(mockCompile()).toHaveBeenCalledWith(mockTemplateContent);
@@ -78,8 +83,10 @@ describe('EmailTemplateService', () => {
     });
 
     it('should cache template after first load', async () => {
-      const template1 = await EmailTemplateService.loadTemplate('test-template.html');
-      const template2 = await EmailTemplateService.loadTemplate('test-template.html');
+      const template1 =
+        await EmailTemplateService.loadTemplate('test-template.html');
+      const template2 =
+        await EmailTemplateService.loadTemplate('test-template.html');
 
       // Should only read file once
       expect(mockReadFileSync()).toHaveBeenCalledTimes(1);
@@ -108,7 +115,9 @@ describe('EmailTemplateService', () => {
 
       await expect(
         EmailTemplateService.loadTemplate('nonexistent-template.html')
-      ).rejects.toThrow('Failed to load template nonexistent-template.html: ENOENT: no such file or directory');
+      ).rejects.toThrow(
+        'Failed to load template nonexistent-template.html: ENOENT: no such file or directory'
+      );
     });
 
     it('should throw EmailWorkerError when template file cannot be read', async () => {
@@ -123,7 +132,9 @@ describe('EmailTemplateService', () => {
 
       await expect(
         EmailTemplateService.loadTemplate('protected-template.html')
-      ).rejects.toThrow('Failed to load template protected-template.html: Permission denied');
+      ).rejects.toThrow(
+        'Failed to load template protected-template.html: Permission denied'
+      );
     });
 
     it('should handle non-Error exceptions when reading template', async () => {
@@ -137,12 +148,16 @@ describe('EmailTemplateService', () => {
 
       await expect(
         EmailTemplateService.loadTemplate('error-template.html')
-      ).rejects.toThrow('Failed to load template error-template.html: Unknown error');
+      ).rejects.toThrow(
+        'Failed to load template error-template.html: Unknown error'
+      );
     });
 
     it('should load different templates independently', async () => {
-      const template1 = await EmailTemplateService.loadTemplate('template1.html');
-      const template2 = await EmailTemplateService.loadTemplate('template2.html');
+      const template1 =
+        await EmailTemplateService.loadTemplate('template1.html');
+      const template2 =
+        await EmailTemplateService.loadTemplate('template2.html');
 
       expect(mockReadFileSync()).toHaveBeenCalledTimes(2);
       expect(mockCompile()).toHaveBeenCalledTimes(2);
@@ -158,7 +173,10 @@ describe('EmailTemplateService', () => {
         licenseKey: 'ABC-123',
       };
 
-      const html = await EmailTemplateService.renderTemplate('test-template.html', data);
+      const html = await EmailTemplateService.renderTemplate(
+        'test-template.html',
+        data
+      );
 
       expect(mockCompiledTemplate).toHaveBeenCalled();
       expect(html).toBeDefined();
@@ -175,11 +193,15 @@ describe('EmailTemplateService', () => {
       const callData = mockCompiledTemplate.mock.calls[0][0];
       expect(callData.customerName).toBe('John Doe');
       expect(callData.timestamp).toBeDefined();
-      expect(callData.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
-      
+      expect(callData.timestamp).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/
+      );
+
       const timestamp = new Date(callData.timestamp);
       const afterTime = new Date();
-      expect(timestamp.getTime()).toBeGreaterThanOrEqual(new Date(beforeTime).getTime());
+      expect(timestamp.getTime()).toBeGreaterThanOrEqual(
+        new Date(beforeTime).getTime()
+      );
       expect(timestamp.getTime()).toBeLessThanOrEqual(afterTime.getTime());
     });
 
@@ -210,7 +232,9 @@ describe('EmailTemplateService', () => {
 
       await expect(
         EmailTemplateService.renderTemplate('test-template.html', {})
-      ).rejects.toThrow('Failed to render template test-template.html: Template compilation failed');
+      ).rejects.toThrow(
+        'Failed to render template test-template.html: Template compilation failed'
+      );
     });
 
     it('should handle non-Error exceptions during rendering', async () => {
@@ -224,15 +248,17 @@ describe('EmailTemplateService', () => {
 
       await expect(
         EmailTemplateService.renderTemplate('test-template.html', {})
-      ).rejects.toThrow('Failed to render template test-template.html: Unknown error');
+      ).rejects.toThrow(
+        'Failed to render template test-template.html: Unknown error'
+      );
     });
 
     it('should use cached template when rendering multiple times', async () => {
       const data = { customerName: 'John Doe' };
-      
+
       // Clear cache to start fresh
       EmailTemplateService.clearCache();
-      
+
       // Reset mocks to start fresh
       vi.clearAllMocks();
       mockReadFileSync().mockReturnValue(mockTemplateContent);
@@ -254,7 +280,7 @@ describe('EmailTemplateService', () => {
   describe('clearCache', () => {
     it('should clear the template cache', () => {
       EmailTemplateService.clearCache();
-      
+
       // Cache should be cleared, so next load should read file again
       expect(() => EmailTemplateService.clearCache()).not.toThrow();
     });
@@ -288,4 +314,3 @@ describe('EmailTemplateService', () => {
     });
   });
 });
-

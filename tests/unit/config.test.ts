@@ -1,6 +1,6 @@
 /**
  * Config Unit Tests
- * 
+ *
  * Tests for the configuration module.
  * Note: Config module loads at import time, so we test with the environment
  * variables set in vitest.setup.ts

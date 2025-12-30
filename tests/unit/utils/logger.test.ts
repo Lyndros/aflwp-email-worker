@@ -1,6 +1,6 @@
 /**
  * Logger Unit Tests
- * 
+ *
  * Tests for the logger utility module.
  */
 
@@ -28,22 +28,30 @@ describe('Logger', () => {
 
     it('should have error method', () => {
       expect(() => logger.error('Error message')).not.toThrow();
-      expect(() => logger.error({ error: 'test' }, 'Error message')).not.toThrow();
+      expect(() =>
+        logger.error({ error: 'test' }, 'Error message')
+      ).not.toThrow();
     });
 
     it('should have debug method', () => {
       expect(() => logger.debug('Debug message')).not.toThrow();
-      expect(() => logger.debug({ key: 'value' }, 'Debug message')).not.toThrow();
+      expect(() =>
+        logger.debug({ key: 'value' }, 'Debug message')
+      ).not.toThrow();
     });
 
     it('should have warn method', () => {
       expect(() => logger.warn('Warning message')).not.toThrow();
-      expect(() => logger.warn({ key: 'value' }, 'Warning message')).not.toThrow();
+      expect(() =>
+        logger.warn({ key: 'value' }, 'Warning message')
+      ).not.toThrow();
     });
 
     it('should have fatal method', () => {
       expect(() => logger.fatal('Fatal message')).not.toThrow();
-      expect(() => logger.fatal({ key: 'value' }, 'Fatal message')).not.toThrow();
+      expect(() =>
+        logger.fatal({ key: 'value' }, 'Fatal message')
+      ).not.toThrow();
     });
 
     it('should handle structured logging', () => {
@@ -53,13 +61,16 @@ describe('Logger', () => {
         metadata: { key: 'value' },
       };
 
-      expect(() => logger.info(logData, 'Structured log message')).not.toThrow();
+      expect(() =>
+        logger.info(logData, 'Structured log message')
+      ).not.toThrow();
     });
 
     it('should handle error logging with error objects', () => {
       const error = new Error('Test error');
-      expect(() => logger.error({ error: error.message }, 'Error occurred')).not.toThrow();
+      expect(() =>
+        logger.error({ error: error.message }, 'Error occurred')
+      ).not.toThrow();
     });
   });
 });
-

@@ -1,114 +1,113 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>New License Purchase Notification</title>
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      line-height: 1.6;
-      color: #333;
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 20px;
-      background-color: #f4f4f4;
-    }
-    .container {
-      background-color: #ffffff;
-      border-radius: 8px;
-      padding: 30px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    h1 {
-      color: #2c3e50;
-      margin-top: 0;
-    }
-    .info-section {
-      background-color: #f8f9fa;
-      border-left: 4px solid #007bff;
-      padding: 15px;
-      margin: 20px 0;
-      border-radius: 4px;
-    }
-    .info-row {
-      margin: 10px 0;
-    }
-    .label {
-      font-weight: bold;
-      color: #555;
-      display: inline-block;
-      min-width: 150px;
-    }
-    .value {
-      color: #333;
-    }
-    .license-key {
-      font-family: 'Courier New', monospace;
-      font-size: 18px;
-      font-weight: bold;
-      color: #004085;
-      background-color: #e7f3ff;
-      padding: 10px;
-      border-radius: 4px;
-      text-align: center;
-      margin: 15px 0;
-    }
-    .footer {
-      margin-top: 30px;
-      padding-top: 20px;
-      border-top: 1px solid #ddd;
-      font-size: 12px;
-      color: #777;
-      text-align: center;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>New License Purchase Notification</h1>
-    
-    <p>A new license has been purchased. Details below:</p>
-    
-    <div class="info-section">
-      <h2 style="margin-top: 0; color: #007bff;">Customer Information</h2>
-      <div class="info-row">
-        <span class="label">Customer Name:</span>
-        <span class="value">{{customerName}}</span>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New License Purchase Notification</title>
+    <style>
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          'Helvetica Neue', Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f4f4f4;
+      }
+      .container {
+        background-color: #ffffff;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #2c3e50;
+        margin-top: 0;
+      }
+      .info-section {
+        background-color: #f8f9fa;
+        border-left: 4px solid #007bff;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 4px;
+      }
+      .info-row {
+        margin: 10px 0;
+      }
+      .label {
+        font-weight: bold;
+        color: #555;
+        display: inline-block;
+        min-width: 150px;
+      }
+      .value {
+        color: #333;
+      }
+      .license-key {
+        font-family: 'Courier New', monospace;
+        font-size: 18px;
+        font-weight: bold;
+        color: #004085;
+        background-color: #e7f3ff;
+        padding: 10px;
+        border-radius: 4px;
+        text-align: center;
+        margin: 15px 0;
+      }
+      .footer {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #ddd;
+        font-size: 12px;
+        color: #777;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>New License Purchase Notification</h1>
+
+      <p>A new license has been purchased. Details below:</p>
+
+      <div class="info-section">
+        <h2 style="margin-top: 0; color: #007bff">Customer Information</h2>
+        <div class="info-row">
+          <span class="label">Customer Name:</span>
+          <span class="value">{{customerName}}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Customer Email:</span>
+          <span class="value">{{customerEmail}}</span>
+        </div>
       </div>
-      <div class="info-row">
-        <span class="label">Customer Email:</span>
-        <span class="value">{{customerEmail}}</span>
+
+      <div class="info-section">
+        <h2 style="margin-top: 0; color: #007bff">License Information</h2>
+        <div class="license-key">{{licenseKey}}</div>
+        <div class="info-row">
+          <span class="label">License Type:</span>
+          <span class="value">{{licenseTypeName}}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Description:</span>
+          <span class="value">{{licenseTypeDescription}}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Max Domains:</span>
+          <span class="value">{{licenseTypeMaxDomains}}</span>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>
+          This is an automated notification from AFLWP License Management
+          System.
+        </p>
+        <p>Generated at {{timestamp}}</p>
       </div>
     </div>
-    
-    <div class="info-section">
-      <h2 style="margin-top: 0; color: #007bff;">License Information</h2>
-      <div class="license-key">{{licenseKey}}</div>
-      <div class="info-row">
-        <span class="label">License Type:</span>
-        <span class="value">{{licenseTypeName}}</span>
-      </div>
-      <div class="info-row">
-        <span class="label">Description:</span>
-        <span class="value">{{licenseTypeDescription}}</span>
-      </div>
-      <div class="info-row">
-        <span class="label">Max Domains:</span>
-        <span class="value">{{licenseTypeMaxDomains}}</span>
-      </div>
-    </div>
-    
-    <div class="footer">
-      <p>This is an automated notification from AFLWP License Management System.</p>
-      <p>Generated at {{timestamp}}</p>
-    </div>
-  </div>
-</body>
+  </body>
 </html>
-
-
-
-
-
-

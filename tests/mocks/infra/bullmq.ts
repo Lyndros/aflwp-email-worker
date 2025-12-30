@@ -1,6 +1,6 @@
 /**
  * BullMQ Mock
- * 
+ *
  * Global mock for BullMQ to prevent actual Redis connections during tests.
  */
 
@@ -17,4 +17,3 @@ vi.mock('bullmq', () => ({
   })),
   Redis: vi.fn(),
 }));
-

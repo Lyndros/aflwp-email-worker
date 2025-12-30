@@ -1,13 +1,13 @@
 /**
  * Email Worker Error Types
- * 
+ *
  * This module defines error types specific to the Email Worker.
  * These errors are used throughout the worker for consistent error handling.
  */
 
 /**
  * Email Worker Error Class
- * 
+ *
  * Custom error class for Email Worker operations.
  * Similar to ApiError but without HTTP status codes since this is a worker service.
  */
@@ -24,7 +24,7 @@ export class EmailWorkerError extends Error {
 
 /**
  * Error type definitions
- * 
+ *
  * These error types are used throughout the Email Worker for consistent error handling.
  */
 export const errorTypes = {
@@ -37,9 +37,3 @@ export const errorTypes = {
   /** Template rendering error */
   TEMPLATE_ERROR: 'TEMPLATE_ERROR',
 } as const;
-
-
-
-
-
-

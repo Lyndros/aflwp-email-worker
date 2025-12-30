@@ -1,6 +1,6 @@
 /**
  * Email Job Types
- * 
+ *
  * This module defines TypeScript types for email notification job data.
  * These types match the job data structure used by the EmailQueueService in the API.
  */
@@ -42,9 +42,3 @@ export interface CreditPurchaseNotificationData {
 export type EmailNotificationJobData =
   | LicensePurchaseNotificationData
   | CreditPurchaseNotificationData;
-
-
-
-
-
-

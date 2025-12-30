@@ -1,6 +1,6 @@
 /**
  * EmailService Unit Tests
- * 
+ *
  * Comprehensive unit tests for the EmailService class.
  * Tests cover all methods including success and error scenarios.
  */
@@ -17,11 +17,11 @@ vi.mock('nodemailer', () => {
   const mockCreateTransportFn = vi.fn(() => ({
     sendMail: mockSendMailFn,
   }));
-  
+
   // Store references for use in tests
   (globalThis as any).__mockSendMail = mockSendMailFn;
   (globalThis as any).__mockCreateTransport = mockCreateTransportFn;
-  
+
   return {
     default: {
       createTransport: mockCreateTransportFn,
@@ -32,10 +32,10 @@ vi.mock('nodemailer', () => {
 // Mock EmailTemplateService - function must be created inside factory
 vi.mock('@/services/emailTemplateService', () => {
   const mockRenderTemplateFn = vi.fn();
-  
+
   // Store reference for use in tests
   (globalThis as any).__mockRenderTemplate = mockRenderTemplateFn;
-  
+
   return {
     EmailTemplateService: {
       renderTemplate: mockRenderTemplateFn,
@@ -192,7 +192,9 @@ describe('EmailService', () => {
         expect.fail('Should have thrown an error');
       } catch (error) {
         expect(error).toBeInstanceOf(EmailWorkerError);
-        expect((error as EmailWorkerError).message).toBe('Failed to send email: Template not found');
+        expect((error as EmailWorkerError).message).toBe(
+          'Failed to send email: Template not found'
+        );
       }
     });
 
@@ -207,7 +209,9 @@ describe('EmailService', () => {
         expect.fail('Should have thrown an error');
       } catch (error) {
         expect(error).toBeInstanceOf(EmailWorkerError);
-        expect((error as EmailWorkerError).message).toBe('Failed to send email: Template not found');
+        expect((error as EmailWorkerError).message).toBe(
+          'Failed to send email: Template not found'
+        );
       }
     });
 
@@ -220,7 +224,9 @@ describe('EmailService', () => {
         expect.fail('Should have thrown an error');
       } catch (error) {
         expect(error).toBeInstanceOf(EmailWorkerError);
-        expect((error as EmailWorkerError).message).toBe('Failed to send email: SMTP connection failed');
+        expect((error as EmailWorkerError).message).toBe(
+          'Failed to send email: SMTP connection failed'
+        );
       }
     });
 
@@ -235,7 +241,9 @@ describe('EmailService', () => {
         expect.fail('Should have thrown an error');
       } catch (error) {
         expect(error).toBeInstanceOf(EmailWorkerError);
-        expect((error as EmailWorkerError).message).toBe('Failed to send email: SMTP connection failed');
+        expect((error as EmailWorkerError).message).toBe(
+          'Failed to send email: SMTP connection failed'
+        );
       }
     });
 
@@ -247,7 +255,9 @@ describe('EmailService', () => {
         expect.fail('Should have thrown an error');
       } catch (error) {
         expect(error).toBeInstanceOf(EmailWorkerError);
-        expect((error as EmailWorkerError).message).toBe('Failed to send email: Unknown error');
+        expect((error as EmailWorkerError).message).toBe(
+          'Failed to send email: Unknown error'
+        );
       }
     });
 
@@ -331,7 +341,9 @@ describe('EmailService', () => {
         expect.fail('Should have thrown an error');
       } catch (error) {
         expect(error).toBeInstanceOf(EmailWorkerError);
-        expect((error as EmailWorkerError).message).toBe('Failed to send email: Template not found');
+        expect((error as EmailWorkerError).message).toBe(
+          'Failed to send email: Template not found'
+        );
       }
     });
 
@@ -346,7 +358,9 @@ describe('EmailService', () => {
         expect.fail('Should have thrown an error');
       } catch (error) {
         expect(error).toBeInstanceOf(EmailWorkerError);
-        expect((error as EmailWorkerError).message).toBe('Failed to send email: Template not found');
+        expect((error as EmailWorkerError).message).toBe(
+          'Failed to send email: Template not found'
+        );
       }
     });
 
@@ -359,7 +373,9 @@ describe('EmailService', () => {
         expect.fail('Should have thrown an error');
       } catch (error) {
         expect(error).toBeInstanceOf(EmailWorkerError);
-        expect((error as EmailWorkerError).message).toBe('Failed to send email: SMTP connection failed');
+        expect((error as EmailWorkerError).message).toBe(
+          'Failed to send email: SMTP connection failed'
+        );
       }
     });
 
@@ -374,7 +390,9 @@ describe('EmailService', () => {
         expect.fail('Should have thrown an error');
       } catch (error) {
         expect(error).toBeInstanceOf(EmailWorkerError);
-        expect((error as EmailWorkerError).message).toBe('Failed to send email: SMTP connection failed');
+        expect((error as EmailWorkerError).message).toBe(
+          'Failed to send email: SMTP connection failed'
+        );
       }
     });
 
@@ -386,7 +404,9 @@ describe('EmailService', () => {
         expect.fail('Should have thrown an error');
       } catch (error) {
         expect(error).toBeInstanceOf(EmailWorkerError);
-        expect((error as EmailWorkerError).message).toBe('Failed to send email: Unknown error');
+        expect((error as EmailWorkerError).message).toBe(
+          'Failed to send email: Unknown error'
+        );
       }
     });
 

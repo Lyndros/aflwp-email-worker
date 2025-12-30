@@ -3,7 +3,7 @@
  *
  * We keep this deterministic and self-contained so unit tests do not depend on
  * a local `.env.development` file being present in CI.
- * 
+ *
  * This file also loads global mocks from the tests/mocks/infra/ directory.
  */
 
@@ -27,9 +27,3 @@ process.env.SMTP_USER = 'test_smtp_user';
 process.env.SMTP_PASSWORD = 'test_smtp_password';
 process.env.SMTP_FROM = 'test@example.com';
 process.env.ADMIN_EMAIL = 'admin@example.com';
-
-
-
-
-
-
