@@ -6,8 +6,6 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import fs from 'node:fs';
-import path from 'node:path';
 
 // Mock fs
 vi.mock('node:fs', () => {
@@ -44,7 +42,6 @@ vi.mock('handlebars', () => {
 import { EmailTemplateService } from '@/services/emailTemplateService';
 import { EmailWorkerError } from '@/api/v1/errors';
 import fs from 'node:fs';
-import Handlebars from 'handlebars';
 
 // Get mock functions from global scope
 const mockReadFileSync = () => (globalThis as any).__mockReadFileSync;

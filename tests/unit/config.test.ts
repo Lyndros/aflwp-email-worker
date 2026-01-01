@@ -6,10 +6,9 @@
  * variables set in vitest.setup.ts
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { redisConfig, emailConfig, appConfig } from '@/config';
 import { EmailWorkerError } from '@/api/v1/errors';
-import { readFileSync } from 'node:fs';
 
 describe('Config', () => {
   describe('redisConfig', () => {

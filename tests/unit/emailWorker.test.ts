@@ -21,8 +21,6 @@ const mockSendCreditPurchaseNotification = () =>
 // Import after mocks
 import { EmailWorker } from '@/emailWorker';
 import { EmailWorkerError } from '@/api/v1/errors';
-import { Worker } from 'bullmq';
-import { Redis } from 'ioredis';
 
 // Mock EmailService
 vi.mock('@/services/emailService', () => {
@@ -60,10 +58,6 @@ vi.mock('bullmq', () => {
   class MockWorker {
     on = mockWorkerOn;
     close = mockWorkerClose;
-
-    constructor() {
-      // Constructor implementation
-    }
   }
 
   (globalThis as any).__mockWorker = MockWorker;
@@ -80,10 +74,6 @@ vi.mock('ioredis', () => {
     connect = vi.fn();
     disconnect = vi.fn();
     quit = mockRedisQuit;
-
-    constructor() {
-      // Constructor implementation
-    }
   }
 
   (globalThis as any).__mockRedis = MockRedis;
