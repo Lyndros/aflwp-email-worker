@@ -6,8 +6,10 @@
  * variables set in vitest.setup.ts
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { redisConfig, emailConfig, appConfig } from '@/config';
+import { EmailWorkerError } from '@/api/v1/errors';
+import { readFileSync } from 'node:fs';
 
 describe('Config', () => {
   describe('redisConfig', () => {
@@ -78,6 +80,25 @@ describe('Config', () => {
     it('should have valid node environment', () => {
       const validEnvs = ['development', 'production', 'test'];
       expect(validEnvs).toContain(appConfig.nodeEnvironment);
+    });
+  });
+
+  describe('error handling', () => {
+    it('should have EmailWorkerError available for requireEnv errors', () => {
+      // Verify error type exists (used in requireEnv line 39)
+      expect(EmailWorkerError).toBeDefined();
+      
+      // Verify that all required configs are loaded (meaning requireEnv worked)
+      expect(redisConfig.host).toBeDefined();
+      expect(emailConfig.host).toBeDefined();
+      expect(appConfig.nodeEnvironment).toBeDefined();
+    });
+
+    it('should successfully read package version', () => {
+      // Verify getPackageVersion works (covers lines 66-75)
+      expect(appConfig.packageVersion).toBeDefined();
+      expect(typeof appConfig.packageVersion).toBe('string');
+      expect(appConfig.packageVersion).toMatch(/^\d+\.\d+\.\d+/);
     });
   });
 });

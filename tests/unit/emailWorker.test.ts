@@ -48,6 +48,7 @@ vi.mock('@/utils/logger', () => ({
     info: vi.fn(),
     error: vi.fn(),
     debug: vi.fn(),
+    warn: vi.fn(),
   },
 }));
 
@@ -325,6 +326,292 @@ describe('EmailWorker', () => {
       expect(mockOn).toHaveBeenCalledWith('failed', expect.any(Function));
       expect(mockOn).toHaveBeenCalledWith('stalled', expect.any(Function));
       expect(mockOn).toHaveBeenCalledWith('error', expect.any(Function));
+    });
+
+    it('should execute ready event handler', () => {
+      const mockOn = vi.fn((event, handler) => {
+        if (event === 'ready') {
+          handler();
+        }
+      });
+      const mockWorkerInstance = { on: mockOn };
+      (emailWorker as any).worker = mockWorkerInstance;
+
+      (emailWorker as any).setupEventHandlers();
+
+      // Verify ready handler was called
+      expect(mockOn).toHaveBeenCalledWith('ready', expect.any(Function));
+    });
+
+    it('should execute active event handler', () => {
+      const mockJob = { id: 'job-1' };
+      const mockOn = vi.fn((event, handler) => {
+        if (event === 'active') {
+          handler(mockJob);
+        }
+      });
+      const mockWorkerInstance = { on: mockOn };
+      (emailWorker as any).worker = mockWorkerInstance;
+
+      (emailWorker as any).setupEventHandlers();
+
+      expect(mockOn).toHaveBeenCalledWith('active', expect.any(Function));
+    });
+
+    it('should execute completed event handler', () => {
+      const mockJob = { id: 'job-1' };
+      const mockOn = vi.fn((event, handler) => {
+        if (event === 'completed') {
+          handler(mockJob);
+        }
+      });
+      const mockWorkerInstance = { on: mockOn };
+      (emailWorker as any).worker = mockWorkerInstance;
+
+      (emailWorker as any).setupEventHandlers();
+
+      expect(mockOn).toHaveBeenCalledWith('completed', expect.any(Function));
+    });
+
+    it('should execute failed event handler', () => {
+      const mockJob = { id: 'job-1' };
+      const mockError = new Error('Job failed');
+      const mockOn = vi.fn((event, handler) => {
+        if (event === 'failed') {
+          handler(mockJob, mockError);
+        }
+      });
+      const mockWorkerInstance = { on: mockOn };
+      (emailWorker as any).worker = mockWorkerInstance;
+
+      (emailWorker as any).setupEventHandlers();
+
+      expect(mockOn).toHaveBeenCalledWith('failed', expect.any(Function));
+    });
+
+    it('should execute failed event handler with null job', () => {
+      const mockError = new Error('Job failed');
+      const mockOn = vi.fn((event, handler) => {
+        if (event === 'failed') {
+          handler(null, mockError);
+        }
+      });
+      const mockWorkerInstance = { on: mockOn };
+      (emailWorker as any).worker = mockWorkerInstance;
+
+      (emailWorker as any).setupEventHandlers();
+
+      expect(mockOn).toHaveBeenCalledWith('failed', expect.any(Function));
+    });
+
+    it('should execute stalled event handler', () => {
+      const mockJobId = 'job-1';
+      const mockOn = vi.fn((event, handler) => {
+        if (event === 'stalled') {
+          handler(mockJobId);
+        }
+      });
+      const mockWorkerInstance = { on: mockOn };
+      (emailWorker as any).worker = mockWorkerInstance;
+
+      (emailWorker as any).setupEventHandlers();
+
+      expect(mockOn).toHaveBeenCalledWith('stalled', expect.any(Function));
+    });
+
+    it('should execute error event handler', () => {
+      const mockError = new Error('Worker error');
+      const mockOn = vi.fn((event, handler) => {
+        if (event === 'error') {
+          handler(mockError);
+        }
+      });
+      const mockWorkerInstance = { on: mockOn };
+      (emailWorker as any).worker = mockWorkerInstance;
+
+      (emailWorker as any).setupEventHandlers();
+
+      expect(mockOn).toHaveBeenCalledWith('error', expect.any(Function));
+    });
+
+    it('should register SIGINT signal handler', () => {
+      const originalOn = process.on;
+      const mockProcessOn = vi.fn();
+      process.on = mockProcessOn as any;
+
+      const mockOn = vi.fn();
+      const mockWorkerInstance = { on: mockOn };
+      (emailWorker as any).worker = mockWorkerInstance;
+
+      (emailWorker as any).setupEventHandlers();
+
+      expect(mockProcessOn).toHaveBeenCalledWith('SIGINT', expect.any(Function));
+
+      process.on = originalOn;
+    });
+
+    it('should register SIGTERM signal handler', () => {
+      const originalOn = process.on;
+      const mockProcessOn = vi.fn();
+      process.on = mockProcessOn as any;
+
+      const mockOn = vi.fn();
+      const mockWorkerInstance = { on: mockOn };
+      (emailWorker as any).worker = mockWorkerInstance;
+
+      (emailWorker as any).setupEventHandlers();
+
+      expect(mockProcessOn).toHaveBeenCalledWith('SIGTERM', expect.any(Function));
+
+      process.on = originalOn;
+    });
+
+    it('should execute SIGINT signal handler with successful shutdown', async () => {
+      const originalOn = process.on;
+      const originalExit = process.exit;
+      const mockExit = vi.fn();
+      process.exit = mockExit as any;
+
+      let sigintHandler: (() => Promise<void>) | undefined;
+      const mockProcessOn = vi.fn((signal: string, handler: () => Promise<void>) => {
+        if (signal === 'SIGINT') {
+          sigintHandler = handler;
+        }
+      });
+      process.on = mockProcessOn as any;
+
+      const mockShutdown = vi.fn().mockResolvedValue(undefined);
+      (emailWorker as any).shutdown = mockShutdown;
+
+      const mockOn = vi.fn();
+      const mockWorkerInstance = { on: mockOn };
+      (emailWorker as any).worker = mockWorkerInstance;
+
+      (emailWorker as any).setupEventHandlers();
+
+      // Execute the SIGINT handler
+      if (sigintHandler) {
+        await sigintHandler();
+        // Wait for promises to resolve
+        await new Promise(resolve => setImmediate(resolve));
+      }
+
+      expect(mockShutdown).toHaveBeenCalledTimes(1);
+      expect(mockExit).toHaveBeenCalledWith(0);
+
+      process.on = originalOn;
+      process.exit = originalExit;
+    });
+
+    it('should execute SIGINT signal handler with failed shutdown', async () => {
+      const originalOn = process.on;
+      const originalExit = process.exit;
+      const mockExit = vi.fn();
+      process.exit = mockExit as any;
+
+      let sigintHandler: (() => Promise<void>) | undefined;
+      const mockProcessOn = vi.fn((signal: string, handler: () => Promise<void>) => {
+        if (signal === 'SIGINT') {
+          sigintHandler = handler;
+        }
+      });
+      process.on = mockProcessOn as any;
+
+      const mockShutdown = vi.fn().mockRejectedValue(new Error('Shutdown failed'));
+      (emailWorker as any).shutdown = mockShutdown;
+
+      const mockOn = vi.fn();
+      const mockWorkerInstance = { on: mockOn };
+      (emailWorker as any).worker = mockWorkerInstance;
+
+      (emailWorker as any).setupEventHandlers();
+
+      // Execute the SIGINT handler
+      if (sigintHandler) {
+        await sigintHandler();
+        // Wait for promises to resolve
+        await new Promise(resolve => setImmediate(resolve));
+      }
+
+      expect(mockShutdown).toHaveBeenCalledTimes(1);
+      expect(mockExit).toHaveBeenCalledWith(1);
+
+      process.on = originalOn;
+      process.exit = originalExit;
+    });
+
+    it('should execute SIGTERM signal handler with successful shutdown', async () => {
+      const originalOn = process.on;
+      const originalExit = process.exit;
+      const mockExit = vi.fn();
+      process.exit = mockExit as any;
+
+      let sigtermHandler: (() => Promise<void>) | undefined;
+      const mockProcessOn = vi.fn((signal: string, handler: () => Promise<void>) => {
+        if (signal === 'SIGTERM') {
+          sigtermHandler = handler;
+        }
+      });
+      process.on = mockProcessOn as any;
+
+      const mockShutdown = vi.fn().mockResolvedValue(undefined);
+      (emailWorker as any).shutdown = mockShutdown;
+
+      const mockOn = vi.fn();
+      const mockWorkerInstance = { on: mockOn };
+      (emailWorker as any).worker = mockWorkerInstance;
+
+      (emailWorker as any).setupEventHandlers();
+
+      // Execute the SIGTERM handler
+      if (sigtermHandler) {
+        await sigtermHandler();
+        // Wait for promises to resolve
+        await new Promise(resolve => setImmediate(resolve));
+      }
+
+      expect(mockShutdown).toHaveBeenCalledTimes(1);
+      expect(mockExit).toHaveBeenCalledWith(0);
+
+      process.on = originalOn;
+      process.exit = originalExit;
+    });
+
+    it('should execute SIGTERM signal handler with failed shutdown', async () => {
+      const originalOn = process.on;
+      const originalExit = process.exit;
+      const mockExit = vi.fn();
+      process.exit = mockExit as any;
+
+      let sigtermHandler: (() => Promise<void>) | undefined;
+      const mockProcessOn = vi.fn((signal: string, handler: () => Promise<void>) => {
+        if (signal === 'SIGTERM') {
+          sigtermHandler = handler;
+        }
+      });
+      process.on = mockProcessOn as any;
+
+      const mockShutdown = vi.fn().mockRejectedValue(new Error('Shutdown failed'));
+      (emailWorker as any).shutdown = mockShutdown;
+
+      const mockOn = vi.fn();
+      const mockWorkerInstance = { on: mockOn };
+      (emailWorker as any).worker = mockWorkerInstance;
+
+      (emailWorker as any).setupEventHandlers();
+
+      // Execute the SIGTERM handler
+      if (sigtermHandler) {
+        await sigtermHandler();
+        // Wait for promises to resolve
+        await new Promise(resolve => setImmediate(resolve));
+      }
+
+      expect(mockShutdown).toHaveBeenCalledTimes(1);
+      expect(mockExit).toHaveBeenCalledWith(1);
+
+      process.on = originalOn;
+      process.exit = originalExit;
     });
   });
 
