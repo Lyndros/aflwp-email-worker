@@ -17,3 +17,4 @@ vi.mock('bullmq', () => ({
   })),
   Redis: vi.fn(),
 }));
+

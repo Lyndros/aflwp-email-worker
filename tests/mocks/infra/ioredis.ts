@@ -16,3 +16,4 @@ vi.mock('ioredis', () => ({
     quit: vi.fn().mockResolvedValue('OK'),
   })),
 }));
+
