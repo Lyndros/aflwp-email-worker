@@ -136,7 +136,7 @@ describe('EmailTemplateService', () => {
 
     it('should handle non-Error exceptions when reading template', async () => {
       (fs.readFileSync as any).mockImplementation(() => {
-        throw 'String error';
+        throw new Error('String error');
       });
 
       await expect(
@@ -146,7 +146,7 @@ describe('EmailTemplateService', () => {
       await expect(
         EmailTemplateService.loadTemplate('error-template.html')
       ).rejects.toThrow(
-        'Failed to load template error-template.html: Unknown error'
+        'Failed to load template error-template.html: String error'
       );
     });
 
@@ -236,7 +236,7 @@ describe('EmailTemplateService', () => {
 
     it('should handle non-Error exceptions during rendering', async () => {
       mockCompiledTemplate.mockImplementation(() => {
-        throw 'String error';
+        throw new Error('String error');
       });
 
       await expect(
@@ -246,7 +246,7 @@ describe('EmailTemplateService', () => {
       await expect(
         EmailTemplateService.renderTemplate('test-template.html', {})
       ).rejects.toThrow(
-        'Failed to render template test-template.html: Unknown error'
+        'Failed to render template test-template.html: String error'
       );
     });
 

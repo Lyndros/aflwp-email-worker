@@ -259,7 +259,9 @@ describe('EmailWorker', () => {
         attemptsMade: 0,
       } as unknown as Job<LicensePurchaseNotificationData>;
 
-      mockSendLicensePurchaseNotification().mockRejectedValue('String error');
+      mockSendLicensePurchaseNotification().mockRejectedValue(
+        new Error('String error')
+      );
 
       await expect((emailWorker as any).processJob(mockJob)).rejects.toThrow();
     });
@@ -667,7 +669,9 @@ describe('EmailWorker', () => {
     });
 
     it('should handle non-Error exceptions during shutdown', async () => {
-      const mockWorkerCloseFn = vi.fn().mockRejectedValue('String error');
+      const mockWorkerCloseFn = vi
+        .fn()
+        .mockRejectedValue(new Error('String error'));
       (emailWorker as any).worker = { close: mockWorkerCloseFn };
       (emailWorker as any).redis = undefined;
 
